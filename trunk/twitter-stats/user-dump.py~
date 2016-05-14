@@ -4,12 +4,13 @@ import sys
 import datetime
 import argparse
 
-#Adapted from: 
+#Adapted from: https://github.com/kylemanna/social-utils/blob/master/twitter/user-dump-followers.py
 
 def dump_followers(api):
-
     followers = []
-    for u in tweepy.Cursor(api.followers, count=300).items():
+    cursor= tweepy.Cursor(api.followers, count=500).items()
+    for u in cursor:
+	print u.name
         followers.append({
             'id':u.id,
             'screen_name':u.screen_name,
@@ -21,7 +22,7 @@ def dump_followers(api):
             'friends_count':u.friends_count,
             'statuses_count':u.statuses_count
             })
-
+    
     return followers
 
 def dump_friends(api):
@@ -58,11 +59,11 @@ if __name__ == '__main__':
     with open('credentials.json', 'r') as fp:
         cred = json.load(fp)
 
+
     # Authorize twitter, initialize tweepy
     auth = tweepy.OAuthHandler(cred['consumer_key'], cred['consumer_secret'])
     auth.set_access_token(cred['access_key'], cred['access_secret'])
-    api = tweepy.API(auth)
-
+    api = tweepy.API(auth,wait_on_rate_limit=True,wait_on_rate_limit_notify=True)
     date_handler = lambda obj: (
             obj.isoformat()
             if isinstance(obj, datetime.datetime)
@@ -70,6 +71,6 @@ if __name__ == '__main__':
             else None
             )
 
-    #print(json.dumps(dump_followers(api), default=date_handler))
-    print(json.dumps(dump_friends(api), default=date_handler))
+    print(json.dumps(dump_followers(api), default=date_handler))
+    #print(json.dumps(dump_friends(api), default=date_handler))
 
